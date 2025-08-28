@@ -8,11 +8,30 @@ define(["react/jsx-runtime","@vertigis/web/components","@vertigis/web/ui/IconBut
     }
   };
 
+  // Step 1: Add a function to define the designer settings UI
+  function getDesignerSettingsSchema(e) {
+    return {
+        $type: "object",
+        $title: "language-designer-gsv-title",
+        properties: {
+            apiKey: {
+                $title: "language-designer-gsv-key-title",
+                $description: "language-designer-gsv-key-description",
+                $type: "string"
+            }
+        }
+    };
+  }
+
+  // Step 2: Access the API key from the component settings
   function createStreetViewWidget() {
     // VertiGIS Studio Web component
     const { useComponent, useMap, useWatch } = useComponent({
       useMap: true
     });
+    
+    // Get the API key from the component properties
+    const { apiKey } = useComponent().props;
 
     // Street View panorama instance
     const [panorama, setPanorama] = useState(null);
@@ -45,10 +64,10 @@ define(["react/jsx-runtime","@vertigis/web/components","@vertigis/web/ui/IconBut
     // Initialize Google Street View
     useEffect(() => {
       const container = document.getElementById("street-view-container");
-      if (container) {
+      if (container && apiKey) {
         // Load the Google Maps API script
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY_HERE&libraries=places`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
         script.async = true;
         document.head.appendChild(script);
 
@@ -68,7 +87,7 @@ define(["react/jsx-runtime","@vertigis/web/components","@vertigis/web/ui/IconBut
           });
         };
       }
-    }, []);
+    }, [apiKey]); // Added apiKey to the dependency array
 
     // Toggle sync state
     const handleSyncClick = () => {
@@ -96,7 +115,9 @@ define(["react/jsx-runtime","@vertigis/web/components","@vertigis/web/ui/IconBut
     getComponentType: () => createStreetViewWidget,
     itemType: "google-street-view",
     title: "Google Street View",
-    iconId: "map-3d"
+    iconId: "map-3d",
+    // Step 3: Add the getDesignerSettingsSchema function to the component definition
+    getDesignerSettingsSchema
   });
 
   // Register the model for the component
@@ -111,7 +132,10 @@ define(["react/jsx-runtime","@vertigis/web/components","@vertigis/web/ui/IconBut
     values: {
       "language-web-incubator-google-street-view-title": "Google Street View",
       "language-web-incubator-google-street-view-enable-sync-title": "Enable positional sync",
-      "language-web-incubator-google-street-view-disable-sync-title": "Disable positional sync"
+      "language-web-incubator-google-street-view-disable-sync-title": "Disable positional sync",
+      "language-designer-gsv-title": "Google Street View",
+      "language-designer-gsv-key-title": "Google Maps API Key",
+      "language-designer-gsv-key-description": "Enter your Google Maps API Key to enable the Street View component."
     }
   });
 
